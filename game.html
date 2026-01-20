@@ -6,176 +6,161 @@
     <title>Put In Work - The Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #ff8c00; --bg: #000; }
+        :root { --neon: #ff8c00; --red: #8B0000; }
         body { 
-            margin: 0; padding: 0; background: var(--bg); 
-            color: white; font-family: 'Helvetica Neue', sans-serif;
-            overflow: hidden; touch-action: none;
+            margin: 0; background: #000; color: white; 
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; touch-action: none; text-align: center;
         }
-        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        canvas { background: #050505; border-bottom: 4px solid var(--neon); display: none; width: 100%; max-width: 800px; height: 400px; }
+        #game-wrap { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* UI Overlays */
-        .overlay {
-            position: absolute; text-align: center; z-index: 10;
-            background: rgba(0,0,0,0.9); padding: 30px; border-radius: 15px; border: 2px solid var(--neon);
+        canvas { 
+            background: #050505; 
+            border: 4px solid var(--neon); 
+            max-width: 100%; 
+            image-rendering: pixelated; 
         }
-        h1 { font-family: 'Permanent Marker', cursive; color: var(--neon); font-size: 3rem; margin: 0; text-shadow: 0 0 15px var(--neon); }
-        .stats { position: absolute; top: 20px; right: 20px; font-weight: bold; color: var(--neon); text-align: right; z-index: 5; }
+
+        .ui-panel { position: absolute; top: 20px; right: 20px; color: var(--neon); font-size: 1.2rem; text-align: right; z-index: 10; }
         
-        .menu-btn {
-            background: var(--neon); color: black; border: none; padding: 15px 30px;
-            font-weight: bold; text-transform: uppercase; cursor: pointer; margin: 10px; border-radius: 5px;
+        .overlay { 
+            position: absolute; z-index: 20; background: rgba(0,0,0,0.9); 
+            padding: 40px; border: 2px solid var(--neon); width: 80%; max-width: 400px;
         }
-        .spotify-btn { background: #1DB954; color: white; text-decoration: none; display: inline-block; padding: 15px 30px; border-radius: 5px; font-weight: bold; margin-top: 10px;}
+
+        h1 { font-family: 'Permanent Marker', cursive; color: var(--neon); font-size: 2.5rem; margin: 0; }
+        .btn { background: var(--neon); color: black; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        
+        /* Screen Shake Animation */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(-1deg); }
+            40% { transform: translate(3px, 2px) rotate(1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            80% { transform: translate(3px, 1px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(0deg); }
+        }
+        .shaking { animation: shake 0.4s; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div class="stats" id="ui-stats" style="display:none;">
-            SCORE: <span id="score-val">0</span><br>
-            LIVES: <span id="lives-val">3</span>
+    <div id="game-wrap">
+        <div class="ui-panel" id="ui" style="display:none;">
+            SCORE: <span id="score">0</span><br>
+            LIVES: <span id="lives">❤️❤️❤️</span>
         </div>
 
-        <div id="start-menu" class="overlay">
+        <div id="menu" class="overlay">
             <h1>PUT IN WORK</h1>
-            <p>JUMP OVER THE OBSTACLES</p>
-            <p id="high-score-display">HIGH SCORE: 0</p>
-            <button class="menu-btn" onclick="startGame()">START GAME</button><br>
-            <a href="https://open.spotify.com/artist/YOUR_ID" target="_blank" class="spotify-btn">LISTEN ON SPOTIFY</a>
-        </div>
-
-        <div id="game-over" class="overlay" style="display:none;">
-            <h1>GAME OVER</h1>
-            <p>SCORE: <span id="final-score">0</span></p>
-            <button class="menu-btn" onclick="startGame()">PLAY AGAIN</button><br>
-            <a href="index.html" class="menu-btn" style="background:#333; color:white; text-decoration:none; display:inline-block;">BACK TO HOME</a>
+            <p id="high-score">HIGH SCORE: 0</p>
+            <button class="btn" onclick="startGame()">PRESS START</button>
+            <p style="font-size: 0.8rem; margin-top: 15px;">TAP OR SPACE TO JUMP</p>
         </div>
 
         <canvas id="gameCanvas"></canvas>
     </div>
 
-    <audio id="bg-music" src="track.mp3" loop></audio>
+    <audio id="bgMusic" src="track.mp3" loop></audio>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const music = document.getElementById('bg-music');
-        
-        // Game State
-        let gameActive = false;
-        let score = 0;
-        let lives = 3;
-        let speed = 5;
-        let frame = 0;
-        let obstacles = [];
-        let highScore = localStorage.getItem('vinylzHighScore') || 0;
-        document.getElementById('high-score-display').innerText = `HIGH SCORE: ${highScore}`;
+        const music = document.getElementById('bgMusic');
+        const gameWrap = document.getElementById('game-wrap');
 
-        // Player Object
-        const player = {
-            x: 50, y: 300, w: 40, h: 40,
-            dy: 0, jumpPower: -12, gravity: 0.6, grounded: false
-        };
+        // Assets
+        const bgImg = new Image(); bgImg.src = 'urban-bg.png';
+        const playerImg = new Image(); playerImg.src = 'player-pixel.png';
+        const obsImg = new Image(); obsImg.src = 'obstacle.png';
+
+        // Game State
+        let gameActive = false, score = 0, lives = 3, speed = 6, frames = 0, bgX = 0;
+        let obstacles = [];
+        let highScore = localStorage.getItem('vinylzHS') || 0;
+        document.getElementById('high-score').innerText = `HIGH SCORE: ${highScore}`;
+
+        const player = { x: 80, y: 300, w: 55, h: 55, dy: 0, jump: -15, gravity: 0.8, grounded: false };
 
         function startGame() {
-            gameActive = true;
-            score = 0;
-            lives = 3;
-            speed = 5;
-            obstacles = [];
-            document.getElementById('start-menu').style.display = 'none';
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('ui-stats').style.display = 'block';
-            canvas.style.display = 'block';
+            gameActive = true; score = 0; lives = 3; speed = 6; obstacles = [];
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            document.getElementById('lives').innerText = "❤️❤️❤️";
             music.play();
             update();
         }
 
-        function gameOver() {
-            gameActive = false;
-            music.pause();
-            music.currentTime = 0;
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('vinylzHighScore', highScore);
-            }
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('game-over').style.display = 'block';
+        function triggerShake() {
+            gameWrap.classList.add('shaking');
+            setTimeout(() => gameWrap.classList.remove('shaking'), 400);
         }
 
-        function handleInput() {
-            if (player.grounded && gameActive) {
-                player.dy = player.jumpPower;
-                player.grounded = false;
+        function die() {
+            lives--;
+            triggerShake();
+            document.getElementById('lives').innerText = "❤️".repeat(lives);
+            if (lives <= 0) {
+                gameActive = false;
+                music.pause();
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('vinylzHS', highScore);
+                }
+                document.getElementById('high-score').innerText = `HIGH SCORE: ${highScore}`;
+                document.getElementById('menu').style.display = 'block';
             }
         }
 
-        window.addEventListener('keydown', (e) => { if(e.code === 'Space') handleInput(); });
-        window.addEventListener('touchstart', handleInput);
+        function jump() { if(player.grounded && gameActive) { player.dy = player.jump; player.grounded = false; } }
+        window.addEventListener('keydown', (e) => { if(e.code === 'Space') jump(); });
+        window.addEventListener('touchstart', jump);
 
         function update() {
             if (!gameActive) return;
-
-            // Clear Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Player Physics
+            // 1. PARALLAX BACKGROUND
+            bgX -= 1; // Slower background speed for depth
+            if (bgX <= -canvas.width) bgX = 0;
+            ctx.drawImage(bgImg, bgX, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImg, bgX + canvas.width, 0, canvas.width, canvas.height);
+
+            // 2. PLAYER PHYSICS
             player.dy += player.gravity;
             player.y += player.dy;
-            if (player.y + player.h > 380) {
-                player.y = 380 - player.h;
-                player.dy = 0;
-                player.grounded = true;
+            if (player.y > 310) { player.y = 310; player.dy = 0; player.grounded = true; }
+            ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+
+            // 3. OBSTACLES
+            if (frames % Math.max(45, 110 - Math.floor(score/2)) === 0) {
+                obstacles.push({ x: canvas.width, y: 325, w: 40, h: 40 });
             }
 
-            // Draw Player (The "Vinyl")
-            ctx.fillStyle = '#ff8c00';
-            ctx.beginPath();
-            ctx.arc(player.x + 20, player.y + 20, 20, 0, Math.PI * 2);
-            ctx.fill();
-            // Vinyl details
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            obstacles.forEach((o, i) => {
+                o.x -= speed;
+                ctx.drawImage(obsImg, o.x, o.y, o.w, o.h);
 
-            // Spawn Obstacles
-            if (frame % Math.max(20, 100 - Math.floor(score/5)) === 0) {
-                obstacles.push({ x: canvas.width, y: 340, w: 20, h: 40 });
-            }
-
-            // Move & Draw Obstacles
-            obstacles.forEach((obs, index) => {
-                obs.x -= speed;
-                ctx.fillStyle = "white";
-                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-
-                // Collision Logic
-                if (player.x < obs.x + obs.w && player.x + player.w > obs.x &&
-                    player.y < obs.y + obs.h && player.y + player.h > obs.y) {
-                    obstacles.splice(index, 1);
-                    lives--;
-                    document.getElementById('lives-val').innerText = lives;
-                    if (lives <= 0) gameOver();
+                // Collision
+                if (player.x < o.x + o.w - 10 && player.x + player.w - 10 > o.x &&
+                    player.y < o.y + o.h - 10 && player.y + player.h - 10 > o.y) {
+                    obstacles.splice(i, 1);
+                    die();
                 }
 
-                // Cleanup
-                if (obs.x + obs.w < 0) {
-                    obstacles.splice(index, 1);
+                if (o.x + o.w < 0) {
+                    obstacles.splice(i, 1);
                     score++;
-                    document.getElementById('score-val').innerText = score;
-                    if (score % 10 === 0) speed += 0.5; // Difficulty increase
+                    document.getElementById('score').innerText = score;
+                    speed += 0.1;
                 }
             });
 
-            frame++;
+            frames++;
             requestAnimationFrame(update);
         }
 
-        // Set Canvas Size
-        canvas.width = 800;
-        canvas.height = 400;
+        canvas.width = 800; canvas.height = 400;
     </script>
 </body>
 </html>
