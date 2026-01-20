@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Put In Work - The Game</title>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
         :root { --neon: #ff8c00; --red: #8B0000; }
         body { 
             margin: 0; background: #000; color: white; 
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             overflow: hidden; touch-action: none; text-align: center;
         }
         #game-wrap { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -17,30 +16,44 @@
         canvas { 
             background: #050505; 
             border: 4px solid var(--neon); 
-            max-width: 100%; 
+            max-width: 95%; 
             image-rendering: pixelated; 
         }
 
-        .ui-panel { position: absolute; top: 20px; right: 20px; color: var(--neon); font-size: 1.2rem; text-align: right; z-index: 10; }
+        .ui-panel { position: absolute; top: 20px; right: 20px; color: var(--neon); font-size: 1.2rem; text-align: right; z-index: 10; font-weight: bold; }
         
         .overlay { 
             position: absolute; z-index: 20; background: rgba(0,0,0,0.9); 
-            padding: 40px; border: 2px solid var(--neon); width: 80%; max-width: 400px;
+            padding: 30px; border: 2px solid var(--neon); width: 85%; max-width: 400px;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        h1 { font-family: 'Permanent Marker', cursive; color: var(--neon); font-size: 2.5rem; margin: 0; }
-        .btn { background: var(--neon); color: black; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        
-        /* Screen Shake Animation */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(-1deg); }
-            40% { transform: translate(3px, 2px) rotate(1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            80% { transform: translate(3px, 1px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(0deg); }
+        /* Replaced Font Title with Logo Image */
+        .menu-logo {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 10px;
         }
+
+        .btn { 
+            background: var(--neon); color: black; border: none; 
+            padding: 15px 40px; font-weight: bold; cursor: pointer; 
+            margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;
+        }
+        
+        #high-score { color: var(--neon); letter-spacing: 1px; margin: 10px 0; }
+
+        /* Screen Shake */
         .shaking { animation: shake 0.4s; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            20% { transform: translate(-3px, 0px); }
+            40% { transform: translate(3px, 2px); }
+            60% { transform: translate(-3px, 1px); }
+            80% { transform: translate(3px, 1px); }
+            100% { transform: translate(1px, -2px); }
+        }
     </style>
 </head>
 <body>
@@ -52,10 +65,10 @@
         </div>
 
         <div id="menu" class="overlay">
-            <h1>PUT IN WORK</h1>
+            <img src="title-logo.png" alt="Put In Work" class="menu-logo">
             <p id="high-score">HIGH SCORE: 0</p>
             <button class="btn" onclick="startGame()">PRESS START</button>
-            <p style="font-size: 0.8rem; margin-top: 15px;">TAP OR SPACE TO JUMP</p>
+            <p style="font-size: 0.7rem; margin-top: 15px; color: #666;">TAP OR SPACE TO JUMP</p>
         </div>
 
         <canvas id="gameCanvas"></canvas>
@@ -69,12 +82,11 @@
         const music = document.getElementById('bgMusic');
         const gameWrap = document.getElementById('game-wrap');
 
-        // Assets
+        // Asset Initialization
         const bgImg = new Image(); bgImg.src = 'urban-bg.png';
         const playerImg = new Image(); playerImg.src = 'player-pixel.png';
         const obsImg = new Image(); obsImg.src = 'obstacle.png';
 
-        // Game State
         let gameActive = false, score = 0, lives = 3, speed = 6, frames = 0, bgX = 0;
         let obstacles = [];
         let highScore = localStorage.getItem('vinylzHS') || 0;
@@ -120,19 +132,19 @@
             if (!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. PARALLAX BACKGROUND
-            bgX -= 1; // Slower background speed for depth
+            // 1. Scrolling Parallax Background
+            bgX -= 1;
             if (bgX <= -canvas.width) bgX = 0;
             ctx.drawImage(bgImg, bgX, 0, canvas.width, canvas.height);
             ctx.drawImage(bgImg, bgX + canvas.width, 0, canvas.width, canvas.height);
 
-            // 2. PLAYER PHYSICS
+            // 2. Player
             player.dy += player.gravity;
             player.y += player.dy;
             if (player.y > 310) { player.y = 310; player.dy = 0; player.grounded = true; }
             ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
 
-            // 3. OBSTACLES
+            // 3. Obstacles
             if (frames % Math.max(45, 110 - Math.floor(score/2)) === 0) {
                 obstacles.push({ x: canvas.width, y: 325, w: 40, h: 40 });
             }
@@ -141,9 +153,9 @@
                 o.x -= speed;
                 ctx.drawImage(obsImg, o.x, o.y, o.w, o.h);
 
-                // Collision
-                if (player.x < o.x + o.w - 10 && player.x + player.w - 10 > o.x &&
-                    player.y < o.y + o.h - 10 && player.y + player.h - 10 > o.y) {
+                // Hitbox Collision
+                if (player.x < o.x + o.w - 12 && player.x + player.w - 12 > o.x &&
+                    player.y < o.y + o.h - 12 && player.y + player.h - 12 > o.y) {
                     obstacles.splice(i, 1);
                     die();
                 }
