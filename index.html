@@ -94,19 +94,39 @@
         }
 
         /* BUTTON & SOCIALS */
-        .btn {
-            display: inline-block; padding: 16px 45px;
-            border: 2px solid var(--accent-color);
-            color: var(--accent-color);
-            text-decoration: none; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 3px;
-            transition: all 0.4s ease; border-radius: 4px;
-            z-index: 20;
-        }
+            /* Ensures both buttons look exactly the same */
+    .btn {
+        display: inline-block;
+        width: 240px; /* Uniform width */
+        padding: 16px 0;
+        border: 2px solid var(--accent-color);
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        transition: all 0.4s ease;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.7);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
 
-        .btn:hover {
-            background: var(--accent-color); color: #000;
-            box-shadow: 0 0 40px var(--accent-color);
+    .btn:hover {
+        background: var(--accent-color);
+        color: #000;
+        box-shadow: 0 0 30px var(--accent-color);
+    }
+
+    /* Creates the space between the buttons */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px; /* Adjust this number to increase/decrease the gap */
+        margin: 30px 0;
+        z-index: 20;
+        position: relative;
+        
         }
 
         .social-links {
@@ -139,10 +159,13 @@
             <div class="record-label"></div>
         </div>
     </div>
-
+  
+    <div class="button-group">
     <a href="https://distrokid.com/hyperfollow/justinvinylz/put-in-work?ref=release" 
-       target="_blank" class="btn" id="main-btn">Pre-Save Now</a>
+       target="_blank" class="btn" id="main-btn">Pre-Order No</a>
+    
     <a href="game.html" class="btn">Play Game</a>
+</div>
 
     <div class="social-links">
         <a href="https://open.spotify.com/artist/5ke48AASlXvOScofiEV9rz?si=JVpZkUCXTuePyyagt8EQ9g" target="_blank"><i class="fab fa-spotify"></i></a>
