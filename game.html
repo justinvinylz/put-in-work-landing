@@ -101,7 +101,7 @@
         document.getElementById('high-score').innerText = `HIGH SCORE: ${highScore}`;
 
         // --- PROPORTIONAL ALIGNMENT ---
-        const GROUND_Y = 250; // Adjusted for sidewalk perspective
+        const GROUND_Y = 210; // Adjusted for sidewalk perspective
         const player = { 
             x: 60, 
             y: GROUND_Y, 
@@ -171,9 +171,9 @@
             if (frames % Math.max(60, 140 - Math.floor(score/2)) === 0) {
                 obstacles.push({ 
                     x: canvas.width, 
-                    y: GROUND_Y + 30, // Aligned to character feet
-                    w: 70, 
-                    h: 70 
+                    y: GROUND_Y + 15, // Aligned to character feet
+                    w: 65, 
+                    h: 65 
                 });
             }
 
