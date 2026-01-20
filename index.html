@@ -5,26 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Justin Vinylz - Put In Work</title>
 
-    <meta property="og:title" content="Justin Vinylz - Put In Work">
-    <meta property="og:description" content="Pre-save the new single 'Put In Work' - Dropping Jan 27th">
-    <meta property="og:image" content="https://JUSTINVINYLZ.github.io/put-in-work-landing/Cover.png">
-    <meta property="og:url" content="https://JUSTINVINYLZ.github.io/put-in-work-landing/">
-    <meta name="twitter:card" content="summary_large_image">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
         :root {
             --accent-color: #ff8c00; 
-            --vinyl-red: #800000; /* Deep Red */
             --bg-dark: #000000;
-            --text-light: #ffffff;
         }
 
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-dark);
-            color: var(--text-light);
+            color: #ffffff;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -35,13 +27,15 @@
         #smoke-canvas {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: -1; opacity: 0.5;
+            z-index: -1; opacity: 0.4;
         }
 
-        /* CUSTOM TITLE IMAGE */
+        /* 1. FIXED TITLE IMAGE */
+        .title-area { margin-top: 20px; }
+        
         .main-title-img {
             width: 90%;
-            max-width: 600px;
+            max-width: 550px;
             height: auto;
             display: block;
             margin: 0 auto;
@@ -51,74 +45,55 @@
             letter-spacing: 6px; 
             color: #666; 
             font-size: 0.9rem;
-            margin-top: 10px;
+            margin-top: 5px;
             text-transform: uppercase;
         }
 
         #countdown {
             font-weight: 300; letter-spacing: 2px;
-            margin: 15px 0; color: #444; font-size: 1rem;
+            margin: 10px 0; color: #444; font-size: 0.9rem;
         }
 
         .vinyl-container {
             position: relative; width: 320px; height: 320px;
-            margin: 40px auto; cursor: pointer;
+            margin: 30px auto; cursor: pointer;
         }
 
         .vinyl-sleeve {
-            position: absolute; z-index: 5; width: 100%; height: 100%;
-            background: url('Cover.png');
-            background-size: cover; 
+            position: absolute; z-index: 10; width: 100%; height: 100%;
+            background: url('Cover.png') center/cover;
             border-radius: 4px; box-shadow: 10px 10px 40px rgba(0,0,0,0.9);
         }
 
-        /* DEEP RED VINYL WITH WHITE GROOVE REFLECTION */
+        /* 2. FIXED DEEP RED RECORD */
         .record {
             position: absolute; top: 10px; right: 10px;
             width: 300px; height: 300px;
-            background: radial-gradient(circle, #a00000 0%, #4a0000 100%);
             border-radius: 50%; z-index: 1;
             transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-        }
-
-        /* The White Groove Reflections */
-        .record::after {
-            content: ""; position: absolute;
-            width: 100%; height: 100%;
-            background: conic-gradient(
-                from 0deg,
-                transparent 10%,
-                rgba(255, 255, 255, 0.15) 15%,
-                transparent 20%,
-                transparent 60%,
-                rgba(255, 255, 255, 0.15) 65%,
-                transparent 70%
-            );
-            border-radius: 50%;
-            z-index: 2;
-        }
-
-        /* Micro-groove texture */
-        .record::before {
-            content: ""; position: absolute; width: 100%; height: 100%;
-            border-radius: 50%;
-            background: repeating-radial-gradient(circle, transparent 0, transparent 1px, rgba(0,0,0,0.3) 2px);
-            z-index: 3;
+            
+            /* The base deep red color */
+            background: #8B0000; 
+            
+            /* The white groove reflections and texture combined */
+            background-image: 
+                conic-gradient(from 0deg, transparent 10%, rgba(255,255,255,0.15) 15%, transparent 20%, transparent 60%, rgba(255,255,255,0.15) 65%, transparent 70%),
+                repeating-radial-gradient(circle, rgba(0,0,0,0.3) 0, rgba(0,0,0,0.3) 1px, transparent 2px);
         }
 
         .record-label {
             width: 100px; height: 100px; border-radius: 50%;
             border: 4px solid #1a1a1a; 
-            background: url('Cover.png');
-            background-size: cover; z-index: 4;
+            background: url('Cover.png') center/cover; 
+            z-index: 5;
         }
 
         .vinyl-container:hover .record {
-            transform: translateX(180px) rotate(720deg);
+            transform: translateX(160px) rotate(720deg);
         }
 
+        /* BUTTON & SOCIALS */
         .btn {
             display: inline-block; padding: 16px 45px;
             border: 2px solid var(--accent-color);
@@ -126,39 +101,26 @@
             text-decoration: none; font-weight: bold;
             text-transform: uppercase; letter-spacing: 3px;
             transition: all 0.4s ease; border-radius: 4px;
-            margin-top: 20px; background: transparent;
-            z-index: 10;
+            z-index: 20;
         }
 
         .btn:hover {
             background: var(--accent-color); color: #000;
             box-shadow: 0 0 40px var(--accent-color);
-            transform: scale(1.05);
         }
 
         .social-links {
-            margin-top: 40px;
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            z-index: 10;
+            margin-top: 30px; display: flex; justify-content: center; gap: 20px; z-index: 20;
         }
 
         .social-links a {
-            color: var(--accent-color);
-            font-size: 1.8rem;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            opacity: 0.6;
+            color: var(--accent-color); font-size: 1.6rem;
+            transition: all 0.3s ease; opacity: 0.6;
         }
 
-        .social-links a:hover {
-            opacity: 1;
-            transform: scale(1.2) translateY(-5px);
-            text-shadow: 0 0 15px var(--accent-color);
-        }
+        .social-links a:hover { opacity: 1; transform: scale(1.1); }
 
-        footer { margin-top: 50px; opacity: 0.3; font-size: 0.75rem; letter-spacing: 1px; }
+        footer { margin-top: 40px; opacity: 0.3; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -187,12 +149,10 @@
         <a href="https://youtube.com/@justinvinylz?si=wjpaO07zqiiVzea-" target="_blank"><i class="fab fa-youtube"></i></a>
     </div>
 
-    <footer>
-        © 2026 JUSTIN VINYLZ | RELEASE DATE: JAN 27
-    </footer>
+    <footer>© 2026 JUSTIN VINYLZ</footer>
 
     <script>
-        // --- SMOKE ANIMATION ---
+        // SMOKE LOGIC
         const canvas = document.getElementById('smoke-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -205,7 +165,7 @@
                 this.y = canvas.height + Math.random() * 100;
                 this.size = Math.random() * 80 + 40;
                 this.speedY = Math.random() * 0.4 + 0.1;
-                this.opacity = Math.random() * 0.4;
+                this.opacity = Math.random() * 0.3;
             }
             update() { this.y -= this.speedY; if (this.y < -this.size) this.y = canvas.height + this.size; }
             draw() {
@@ -213,43 +173,34 @@
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
             }
         }
-        for (let i = 0; i < 35; i++) particles.push(new Particle());
-        function animateSmoke() {
+        for (let i = 0; i < 30; i++) particles.push(new Particle());
+        function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateSmoke);
+            requestAnimationFrame(animate);
         }
-        animateSmoke();
+        animate();
 
-        // --- DATE LOGIC ---
-        const preorderDate = new Date("January 20, 2026 00:00:00").getTime();
+        // DATE LOGIC (It is now Jan 20th, so this will show Pre-Order)
         const releaseDate = new Date("January 27, 2026 00:00:00").getTime();
         const btn = document.getElementById('main-btn');
         const countdownEl = document.getElementById('countdown');
 
         function updateStatus() {
             const now = new Date().getTime();
-            if (now >= releaseDate) {
+            const gap = releaseDate - now;
+            
+            if (gap <= 0) {
                 btn.innerText = "Listen Now";
                 countdownEl.innerText = "OUT NOW";
-            } else if (now >= preorderDate) {
-                btn.innerText = "Pre-Order Now";
-                renderCountdown(releaseDate, "FULL RELEASE IN: ");
             } else {
-                btn.innerText = "Coming Soon";
-                renderCountdown(preorderDate, "PRE-ORDER STARTS IN: ");
+                btn.innerText = "Pre-Order Now";
+                const d = Math.floor(gap / (1000 * 60 * 60 * 24));
+                const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+                countdownEl.innerText = `FULL RELEASE IN: ${d}D ${h}H ${m}M`;
             }
         }
-
-        function renderCountdown(target, prefix) {
-            const now = new Date().getTime();
-            const gap = target - now;
-            const d = Math.floor(gap / (1000 * 60 * 60 * 24));
-            const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
-            countdownEl.innerText = `${prefix} ${d}D ${h}H ${m}M`;
-        }
-
         setInterval(updateStatus, 1000);
         updateStatus();
     </script>
