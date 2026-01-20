@@ -105,8 +105,8 @@
         const player = { 
             x: 60, 
             y: GROUND_Y, 
-            w: 110, // Larger presence
-            h: 110, 
+            w: 160, // Larger presence
+            h: 160, 
             dy: 0, 
             jump: -15, 
             gravity: 0.75, 
@@ -168,12 +168,12 @@
             ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
 
             // 3. Obstacle Management
-            if (frames % Math.max(65, 140 - Math.floor(score/2)) === 0) {
+            if (frames % Math.max(60, 140 - Math.floor(score/2)) === 0) {
                 obstacles.push({ 
                     x: canvas.width, 
-                    y: GROUND_Y + 35, // Aligned to character feet
-                    w: 75, 
-                    h: 75 
+                    y: GROUND_Y + 30, // Aligned to character feet
+                    w: 70, 
+                    h: 70 
                 });
             }
 
