@@ -22,7 +22,8 @@
             max-height: 85vh;
             width: auto;
             height: auto;
-            image-rendering: pixelated; /* Keeps the pixel art sharp */
+            /* Changed to 'auto' for high-res spritesheet smoothness */
+            image-rendering: auto; 
         }
 
         .ui-panel { position: absolute; top: 20px; right: 20px; color: var(--neon); font-size: 1.5rem; text-align: right; z-index: 30; font-weight: bold; text-shadow: 2px 2px #000; }
@@ -35,21 +36,8 @@
             box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
-        .menu-logo { 
-            width: 100%; 
-            max-width: 320px; 
-            height: auto; 
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .btn { 
-            background: var(--neon); color: black; border: none; 
-            padding: 18px 50px; font-weight: bold; cursor: pointer; 
-            margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;
-            font-size: 1.1rem;
-        }
-        
+        .menu-logo { width: 100%; max-width: 320px; height: auto; margin-bottom: 20px; display: block; }
+        .btn { background: var(--neon); color: black; border: none; padding: 18px 50px; font-weight: bold; cursor: pointer; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px; font-size: 1.1rem; }
         #high-score { color: var(--neon); letter-spacing: 1px; margin: 10px 0; font-size: 1.2rem; }
 
         .shaking { animation: shake 0.4s; }
@@ -87,30 +75,34 @@
         const music = document.getElementById('bgMusic');
         const gameWrap = document.getElementById('game-wrap');
 
-        // Logic dimensions
         canvas.width = 500; 
         canvas.height = 500;
 
         const bgImg = new Image(); bgImg.src = 'urban-bg.png';
-        const playerImg = new Image(); playerImg.src = 'player-pixel.png';
+        const playerSheet = new Image(); playerSheet.src = 'player-spritesheet.png'; 
         const obsImg = new Image(); obsImg.src = 'obstacle.png';
+
+        // SPRITESHEET DATA
+        const SPRITE_FRAME_W = 2509; // 22584 / 9 frames
+        const SPRITE_FRAME_H = 2500;
 
         let gameActive = false, score = 0, lives = 3, speed = 6, frames = 0, bgX = 0;
         let obstacles = [];
         let highScore = localStorage.getItem('vinylzHS') || 0;
         document.getElementById('high-score').innerText = `HIGH SCORE: ${highScore}`;
 
-        // --- PROPORTIONAL ALIGNMENT ---
-        const GROUND_Y = 260; // Adjusted for sidewalk perspective
+        const GROUND_Y = 260; 
         const player = { 
             x: 60, 
             y: GROUND_Y, 
-            w: 120, // Larger presence
+            w: 120, 
             h: 120, 
             dy: 0, 
             jump: -13.5, 
             gravity: 0.50, 
-            grounded: false 
+            grounded: false,
+            currentFrame: 0,
+            animTimer: 0
         };
 
         function startGame() {
@@ -151,13 +143,12 @@
             if (!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Background (Slow parallax)
             bgX -= 0.6;
             if (bgX <= -canvas.width) bgX = 0;
             ctx.drawImage(bgImg, bgX, 0, canvas.width, canvas.height);
             ctx.drawImage(bgImg, bgX + canvas.width, 0, canvas.width, canvas.height);
 
-            // 2. Player Physics
+            // Physics
             player.dy += player.gravity;
             player.y += player.dy;
             if (player.y > GROUND_Y) { 
@@ -165,23 +156,37 @@
                 player.dy = 0; 
                 player.grounded = true; 
             }
-            ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
 
-            // 3. Obstacle Management
+            // ANIMATION STATE LOGIC
+            if (!player.grounded) {
+                // Jump frames (frames 7, 8, 9 on the sheet)
+                if (player.dy < -2) player.currentFrame = 6;      // Rising
+                else if (player.dy > 2) player.currentFrame = 8;  // Falling
+                else player.currentFrame = 7;                     // Apex
+            } else {
+                // Run frames (frames 1-6 on the sheet)
+                player.animTimer++;
+                if (player.animTimer % 6 === 0) { 
+                    player.currentFrame = (player.currentFrame + 1) % 6;
+                }
+            }
+
+            // DRAW SPRITE SLICE
+            ctx.drawImage(
+                playerSheet,
+                player.currentFrame * SPRITE_FRAME_W, 0, SPRITE_FRAME_W, SPRITE_FRAME_H, // Source
+                player.x, player.y, player.w, player.h // Destination (Maintains your 120x120 size)
+            );
+
+            // Obstacles
             if (frames % Math.max(60, 140 - Math.floor(score/2)) === 0) {
-                obstacles.push({ 
-                    x: canvas.width, 
-                    y: GROUND_Y + 50, // Aligned to character feet
-                    w: 55, 
-                    h: 55 
-                });
+                obstacles.push({ x: canvas.width, y: GROUND_Y + 50, w: 55, h: 55 });
             }
 
             obstacles.forEach((o, i) => {
                 o.x -= speed;
                 ctx.drawImage(obsImg, o.x, o.y, o.w, o.h);
 
-                // Hitbox (Balanced for fun gameplay)
                 if (player.x < o.x + o.w - 25 && player.x + player.w - 25 > o.x &&
                     player.y < o.y + o.h - 25 && player.y + player.h - 25 > o.y) {
                     obstacles.splice(i, 1);
